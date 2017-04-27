@@ -15,7 +15,7 @@ const int DOWN = 4;
 
 const int PACSIZE = 34;
 const int DISPLAY_HEIGHT = 800;
-const int DISPLAY_WIDTH = 800;
+const int DISPLAY_WIDTH = 870;
 
 int main()
 {//sorsha is working on score next
@@ -25,7 +25,7 @@ int main()
 	ALLEGRO_BITMAP *square = NULL;
 	ALLEGRO_BITMAP *wall = NULL;
 	ALLEGRO_BITMAP *dot = NULL;
-	//ALLEGRO_FONT *font = NULL;
+	ALLEGRO_FONT *font = NULL;
 
 
 	//these two variables hold the x and y positions of the square
@@ -86,12 +86,9 @@ int main()
 	//al_init_acodec_addon();
 	al_init_image_addon();
 
-	//font = al_load_ttf_font("meatloaf.ttf", 100, 0);
+	font = al_load_ttf_font("Meatloaf.ttf", 100, 0);
 
 	square = al_load_bitmap("pacman.jpg");
-	//if (square == NULL)
-	//        cout << "a;sldfkjas;ldfkjas;dlfkja" << endl;
-
 
 	//get the keyboard ready to use
 	al_install_keyboard();
@@ -113,7 +110,6 @@ int main()
 	al_clear_to_color(al_map_rgb(0, 0, 360));
 
 	dot = al_create_bitmap(16, 16);
-
 
 	al_set_target_bitmap(dot);
 
@@ -140,7 +136,7 @@ int main()
 
 	//so the game loop is set to act on "ticks" of the timer OR keyboard presses 
 	//OR the mouse closing the display
-	while (!doexit)
+	while (!doexit && score<200)
 	{
 		cout << square_x << " , " << square_y << endl;
 
@@ -169,11 +165,17 @@ int main()
 
 				square_x -= 4.0;
 			}
-			if (!(square_x >0  && square_x <362  && square_y < 402 && square_y>0)){
-				square_x = 764;
-				square_y = 362;
-		}
+			//left warp
+			if (square_x > -40 && square_x < 0 && square_y > 0 && square_y < 800) {
+				square_x = 760;
+				square_y = 400;
+			}
 
+			//right warp
+			if (square_x > 763 && square_x < 840 && square_y > 0 && square_y < 800) {
+				square_x = 0;
+				square_y = 404;
+			}
 			//if the right button is pressed 
 			//move the box right by 4 pixels
 			if (key[3] && wallCollide(square_x, square_y, RIGHT, map) == 0) {
@@ -275,12 +277,13 @@ int main()
 						al_draw_bitmap(dot, column * 40 + 16, row * 40 + 16, NULL);
 			}
 			al_draw_bitmap(square, square_x, square_y, 0);
-			//al_draw_textf(font, al_map_rgb(255, 255, 255), 69, 40, ALLEGRO_ALIGN_LEFT, "%i", score);
+			al_draw_textf(font, al_map_rgb(255, 255, 255), 50, 787, ALLEGRO_ALIGN_LEFT, "%i", score);
 
 			al_flip_display();
 		}
 	}
-
+	al_draw_textf(font, al_map_rgb(255, 255, 255), 50, 787, ALLEGRO_ALIGN_LEFT, "%i", score);
+	system("pause");
 	al_destroy_bitmap(square);
 	al_destroy_timer(timer);
 	al_destroy_display(display);

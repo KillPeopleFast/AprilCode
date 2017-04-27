@@ -15,12 +15,12 @@ void colorchange() {//definition
 	int num = rand() % 100 + 1;
 	if (num <= 25){
 		system("COLOR 10");
-		system("pause");
+		//system("pause");
 		cout << num;
 }
 	else if (num >= 26 && num <= 50) {
 		system("COLOR 20");
-		system("pause");
+		//system("pause");
 		cout << num;
 	}
 	else if (num >= 50 && num <= 100) {
@@ -28,7 +28,7 @@ void colorchange() {//definition
 		system("COLOR 40");
 		cout << num;
 		
-		system("pause");
+		//system("pause");
 	}
 }
 /*
