@@ -5,7 +5,26 @@
 #include <allegro5\allegro_audio.h>
 #include <allegro5\allegro_acodec.h>
 #include <allegro5/allegro_image.h>
+#include <allegro5/allegro_primitives.h>
 using namespace std;
+
+class Ghost {
+public:
+	Ghost();
+	void initGhost(int x, int y, int w, int h);
+	void draw();
+	bool isDead();
+	void killGhost();
+	int GhostCollision(int bouncer_x, int bouncer_y);
+private:
+	int xCoordinate;
+	int yCoordinate;
+	int width;
+	int height;
+	bool Dead;
+};
+
+
 int wallCollide(int x, int y, int dir, int level[20][20]);
 
 const int RIGHT = 1;
@@ -216,7 +235,7 @@ int main()
 			case ALLEGRO_KEY_DOWN:
 				key[1] = true;
 				break;
-
+				
 				//if the left key has been pressed
 			case ALLEGRO_KEY_LEFT:
 				key[2] = true;
@@ -364,4 +383,44 @@ int wallCollide(int x, int y, int dir, int map[20][20])
 	}
 	return 0;
 
+}
+
+Ghost::Ghost() {
+	xCoordinate = 0;
+	yCoordinate = 0;
+	width = 0;
+	height = 0;
+	Dead = 0;
+
+}
+int Ghost::GhostCollision(int bouncer_x, int bouncer_y) {
+	if ((xCoordinate > bouncer_x + 32) ||
+		(xCoordinate + width < bouncer_x) ||
+		(yCoordinate > bouncer_y + 32) ||
+		(yCoordinate + height < bouncer_y))
+	{
+		return 0;
+	}
+	else
+		return 1;
+}
+void Ghost::initGhost(int x, int y, int w, int h) {
+	xCoordinate = x;
+	yCoordinate = y;
+	width = w;
+	height = h;
+	Dead = 0;
+
+}
+
+void Ghost::draw() {
+	al_draw_filled_rectangle(xCoordinate, yCoordinate, xCoordinate + width, yCoordinate + height, al_map_rgb(100, 0, 0));
+}
+
+bool Ghost::isDead() {
+	return Dead;
+}
+
+void Ghost::killGhost() {
+	Dead = true;
 }
