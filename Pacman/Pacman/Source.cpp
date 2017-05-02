@@ -16,12 +16,14 @@ public:
 	bool isDead();
 	void killGhost();
 	int GhostCollision(int bouncer_x, int bouncer_y);
+	void chase(int x, int y, int map[20][20]);
 private:
 	int xCoordinate;
 	int yCoordinate;
 	int width;
 	int height;
 	bool Dead;
+	int direction;
 };
 
 
@@ -104,6 +106,7 @@ int main()
 	//al_install_audio();
 	//al_init_acodec_addon();
 	al_init_image_addon();
+	al_init_primitives_addon();
 
 	font = al_load_ttf_font("Meatloaf.ttf", 100, 0);
 
@@ -152,6 +155,9 @@ int main()
 
 	al_start_timer(timer);
 
+	Ghost JohnCena;
+	
+	JohnCena.initGhost(200, 200, 32, 32);
 
 	//so the game loop is set to act on "ticks" of the timer OR keyboard presses 
 	//OR the mouse closing the display
@@ -201,7 +207,7 @@ int main()
 
 				square_x += 4.0;
 			}
-
+			JohnCena.chase(square_x, square_y, map);
 			//redraw at every tick of the timer
 			redraw = true;
 		}
@@ -210,6 +216,7 @@ int main()
 			score++;
 		}
 
+		
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		else if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
 			break;
@@ -296,13 +303,16 @@ int main()
 						al_draw_bitmap(dot, column * 40 + 16, row * 40 + 16, NULL);
 			}
 			al_draw_bitmap(square, square_x, square_y, 0);
+
+			JohnCena.draw();
+			cout << "flag1" << endl;
 			al_draw_textf(font, al_map_rgb(255, 255, 255), 50, 787, ALLEGRO_ALIGN_LEFT, "%i", score);
 
 			al_flip_display();
 		}
 	}
 	al_draw_textf(font, al_map_rgb(255, 255, 255), 50, 787, ALLEGRO_ALIGN_LEFT, "%i", score);
-	system("pause");
+	//system("pause");
 	al_destroy_bitmap(square);
 	al_destroy_timer(timer);
 	al_destroy_display(display);
@@ -404,17 +414,22 @@ int Ghost::GhostCollision(int bouncer_x, int bouncer_y) {
 	else
 		return 1;
 }
+
+
 void Ghost::initGhost(int x, int y, int w, int h) {
 	xCoordinate = x;
 	yCoordinate = y;
 	width = w;
 	height = h;
 	Dead = 0;
-
+	direction = LEFT;
 }
 
 void Ghost::draw() {
+	cout << "ghost data is" <<xCoordinate<< ", "<<yCoordinate<<", "<< width<<" , " <<height<< endl;
+	//al_draw_filled_rectangle(200, 200,200,200, al_map_rgb(100, 0, 0));
 	al_draw_filled_rectangle(xCoordinate, yCoordinate, xCoordinate + width, yCoordinate + height, al_map_rgb(100, 0, 0));
+
 }
 
 bool Ghost::isDead() {
@@ -423,4 +438,200 @@ bool Ghost::isDead() {
 
 void Ghost::killGhost() {
 	Dead = true;
+}
+
+
+	//chase function. x and y are pacman's position.
+	void Ghost::chase(int x, int y, int map[20][20]) {
+
+
+		/* Directions
+		1 = left
+		2 = up
+		3 = right
+		4 = down*/
+
+		//this is just for testing
+		/*  cout << "state is " << direction << endl;
+		if (wallCollide(xpos, ypos, 1, field))
+		cout << "there's a wall to the left of me" << endl;
+		if (wallCollide(xpos, ypos, 2, field))
+		cout << "there's a wall above me" << endl;
+		if (wallCollide(xpos, ypos, 3, field))
+		cout << "there's a wall to the right of me" << endl;
+		if (wallCollide(xpos, ypos, 4, field))
+		cout << "there's a wall below me" << endl;*/
+
+		/////////////////////////////////LEFT STATE (1)//////////////////////////////////////////////////////////////////
+
+		//if we're moving left and there's an opening above and pacman is above, move up
+		if ((direction == LEFT) && !wallCollide(xpos, ypos, UP, map) && y<ypos)
+			while (!wallCollide(xpos, ypos, 2, field)) {
+				// cout << "trying to move through hole above!" << endl;
+				direction = UP;
+				ypos -= 4;
+				return;
+			}
+
+		//if we're moving left and there's an opening below and pacman is below, move down
+		if ((direction == LEFT) && !wallCollide(xpos, ypos, DOWN, field) && y>ypos)
+			while (!wallCollide(xpos, ypos, 4, field)) {
+				//  cout << "trying to move through hole below!" << endl;
+				direction = DOWN;
+				ypos += 4;
+				return;
+			}
+
+
+		if (direction == LEFT)//left
+			while (!wallCollide(xpos, ypos, LEFT, field)) {
+				xpos -= 4;
+				return;
+			}
+
+		////////////////////////////////UP STATE (2)///////////////////////////////////////////////////////////////
+
+		//if we're moving up and there's an opening left and pacman is left, move left
+		if ((direction == UP) && !wallCollide(xpos, ypos, LEFT, field) && x<xpos)
+			while (!wallCollide(xpos, ypos, LEFT, field)) {
+				//   cout << "trying to move through hole to left!" << endl;
+				direction = LEFT;
+				xpos -= 4;
+				return;
+			}
+		//if we're moving up and there's an opening right and pacman is right, move right
+		if ((direction == UP) && !wallCollide(xpos, ypos, RIGHT, field) && x>xpos)
+			while (!wallCollide(xpos, ypos, 3, field)) {
+				// cout << "trying to move through hole to right!" << endl;
+				direction = RIGHT;
+				xpos += 4;
+				return;
+			}
+		if (direction == UP)//up
+			while (!wallCollide(xpos, ypos, 2, field)) {
+				ypos -= UP;
+				return;
+			}
+
+		/////////RIGHT CASE (3)/////////////////////////////////////////////////////////////////////////////////////////////////////
+		//if we're moving right and there's an opening above and pacman is above, move up
+		if ((direction == RIGHT) && !wallCollide(xpos, ypos, UP, field) && y<ypos)
+			while (!wallCollide(xpos, ypos, 2, field)) {
+				//   cout << "trying to move through hole above!" << endl;
+				direction = UP;
+				ypos -= 2;
+				return;
+			}
+
+		//if we're moving right and there's an opening below and pacman is below, move down
+		if ((direction == RIGHT) && !wallCollide(xpos, ypos, DOWN, field) && y>ypos)
+			while (!wallCollide(xpos, ypos, DOWN, field)) {
+				//  cout << "trying to move through hole below!" << endl;
+				direction = DOWN;
+				ypos += 2;
+				return;
+			}
+
+
+		if (direction == RIGHT)//right
+			while (!wallCollide(xpos, ypos, RIGHT, field)) {
+				xpos += 2;
+				return;
+			}
+
+
+		//////////////DOWN CASE (4)/////////////////////////////////////////////////////////////////////////////////////
+		//if we're moving up and there's an opening left and pacman is left, move left
+		if ((direction == DOWN) && !wallCollide(xpos, ypos, LEFT, field) && x<xpos)
+			while (!wallCollide(xpos, ypos, LEFT, field)) {
+				// cout << "trying to move through hole to left!" << endl;
+				direction = LEFT;
+				xpos -= 2;
+				return;
+			}
+		//if we're moving up and there's an opening right and pacman is right, move right
+		if ((direction == UP) && !wallCollide(xpos, ypos, RIGHT, field) && x>xpos)
+			while (!wallCollide(xpos, ypos, RIGHT, field)) {
+				//   cout << "trying to move through hole to right!" << endl;
+				direction = RIGHT;
+				xpos += 2;
+				return;
+			}
+
+		if (direction == DOWN)//down
+			while (!wallCollide(xpos, ypos, DOWN, field)) {
+				ypos += 2;
+				return;
+			}
+
+
+
+
+
+		///////////////////////////////////////////////////////////////////////////////////////
+		//if pacman is above and there's no wall there, move up
+		if ((y<ypos) && !wallCollide(xpos, ypos, UP, field)) {
+			//  cout << "direction is up" << endl;
+			direction = UP;
+			return;
+		}
+
+
+		//if pacman is below and there's no wall there, move down
+		if ((y>ypos) && !wallCollide(xpos, ypos, DOWN, field)) {
+			direction = DOWN;
+			//   cout << "direction is down" << endl;
+			return;
+		}
+
+		//if pacman is right and there's no wall there, move right
+		if ((x>xpos) && !wallCollide(xpos, ypos, RIGHT, field)) {
+			direction = RIGHT;
+			//  cout << "direction is right" << endl;
+			return;
+		}
+
+		//if pacman is left and there's no wall there, move left
+		if ((x<xpos) && !wallCollide(xpos, ypos, LEFT, field)) {
+			direction = LEFT;
+			// cout << "direction is left" << endl;
+			return;
+
+		}
+
+		//if pacman is above and there's no wall there, move up
+		if (!wallCollide(xpos, ypos, UP, field)) {
+			// cout << "direction is up" << endl;
+			direction = UP;
+			return;
+		}
+
+
+		//if pacman is below and there's no wall there, move down
+		if (!wallCollide(xpos, ypos, DOWN, field)) {
+			direction = DOWN;
+			//cout << "direction is down" << endl;
+			return;
+		}
+
+		//if pacman is right and there's no wall there, move right
+		if (!wallCollide(xpos, ypos, RIGHT, field)) {
+			direction = RIGHT;
+			//  cout << "direction is right" << endl;
+			return;
+		}
+
+		//if pacman is left and there's no wall there, move left
+		if (!wallCollide(xpos, ypos, LEFT, field)) {
+			direction = LEFT;
+			// cout << "direction is left" << endl;
+			return;
+
+		}
+cout << "x pos " << xpos << "  ypos " << ypos << endl;
+	}
+	
+
+
+
 }
